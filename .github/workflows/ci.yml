@@ -1,0 +1,48 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  gate:
+    name: vet + lint + race
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: vet
+        run: go vet ./...
+
+      - name: lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.13
+
+      - name: test (race detector)
+        run: go test -race ./...
+
+  museum:
+    # The bugs/ archetypes must FAIL against naïve implementations —
+    # that failure is a Phase 0 exit criterion, so CI verifies it
+    # continuously: this job is green only when the museum is red.
+    name: archetypes fail as designed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: naïve archetypes must fail
+        run: |
+          if go test -tags naivebug -race -timeout 10s ./bugs/; then
+            echo "::error::naïve archetypes PASSED — the museum is broken"
+            exit 1
+          fi
+          echo "archetypes failed as designed"

@@ -11,7 +11,7 @@ go get github.com/sudarsh1010/goyon
 ```
 
 ```go
-import "github.com/sudarsh1010/goyon"
+import "github.com/sudarsh1010/goyon/par"
 ```
 
 ## Quick start
@@ -37,19 +37,19 @@ First error (or a worker panic, returned as `*par.PanicError`) cancels the rest.
 
 ## API
 
-| Function | Purpose |
-|---|---|
-| `Map` / `MapUnordered` | Transform each element; ordered by default |
-| `ForEach` | Run a function per element |
-| `Filter` | Keep matching elements, order-preserving |
-| `Reduce` | Fold to one value (`WithOrderedReduce` for determinism) |
-| `Join` / `Scope` | Fork-join; structured dynamic spawning |
+| Function               | Purpose                                                 |
+| ---------------------- | ------------------------------------------------------- |
+| `Map` / `MapUnordered` | Transform each element; ordered by default              |
+| `ForEach`              | Run a function per element                              |
+| `Filter`               | Keep matching elements, order-preserving                |
+| `Reduce`               | Fold to one value (`WithOrderedReduce` for determinism) |
+| `Join` / `Scope`       | Fork-join; structured dynamic spawning                  |
 
 Options: `WithConcurrency(n)` (default `GOMAXPROCS`), `WithChunkSize(n)`, `WithFailFast(false)` to collect all errors via `errors.Join`.
 
 ## Why not raw goroutines?
 
-An empirical study of 171 concurrency bugs in Docker, Kubernetes, etcd, gRPC & co. (*Understanding Real-World Concurrency Bugs in Go*, ASPLOS'19) found:
+An empirical study of 171 concurrency bugs in Docker, Kubernetes, etcd, gRPC & co. (_Understanding Real-World Concurrency Bugs in Go_, ASPLOS'19) found:
 
 - **58% of blocking bugs** came from message passing (channels, `select`) — goyon has **no channels in its public API**
 - **11 bugs** from anonymous-function variable capture — goyon passes `(i, v)` as **parameters**

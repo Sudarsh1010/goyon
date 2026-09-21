@@ -1,0 +1,33 @@
+# Lefthook configuration
+# https://github.com/evilmartians/lefthook
+#
+# JS jobs are glob-scoped to docs/ (the fumadocs site) — they only run when
+# site files are staged, so Go-only commits never touch the JS toolchain.
+# Go jobs mirror the CI gate: format, vet, lint. Tests stay in CI
+# (and `go test -race ./...` locally before pushing).
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: oxlint
+      glob: "docs/**/*.{js,ts,jsx,tsx,mdx}"
+      run: pnpm oxlint --fix {staged_files}
+      stage_fixed: true
+
+    - name: oxfmt
+      glob: "docs/**/*.{js,ts,jsx,tsx,mdx,json}"
+      run: pnpm oxfmt --write {staged_files}
+      stage_fixed: true
+
+    - name: gofmt
+      glob: "**/*.go"
+      run: gofmt -w {staged_files}
+      stage_fixed: true
+
+    - name: go vet
+      glob: "**/*.go"
+      run: go vet ./...
+
+    - name: golangci-lint
+      glob: "**/*.go"
+      run: golangci-lint run
