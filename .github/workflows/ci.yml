@@ -1,7 +1,7 @@
 name: ci
 
+# Runs on PR open, every push to an open PR (synchronize), and reopen.
 on:
-  push:
   pull_request:
 
 jobs:
