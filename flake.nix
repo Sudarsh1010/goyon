@@ -28,8 +28,20 @@
             golangci-lint
             gotools
             delve
+
+            nodejs_24
+            corepack_24
           ];
-          shellHook = "";
+          shellHook = ''
+            export COREPACK_HOME="$PWD/.corepack"
+            mkdir -p "$COREPACK_HOME/bin"
+            corepack enable --install-directory "$COREPACK_HOME/bin" >/dev/null 2>&1
+            export PATH="$COREPACK_HOME/bin:$PATH"
+
+            corepack prepare pnpm@12 --activate >/dev/null 2>&1 || true
+
+            echo "node $(node --version) · pnpm $(pnpm --version 2>/dev/null || echo 'n/a') · vp $(vp --version 2>/dev/null || echo 'n/a') · $(rustc --version)"
+          '';
         };
       }
     );

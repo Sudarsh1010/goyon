@@ -1,0 +1,6 @@
+packages:
+  - docs
+  - tooling/*
+allowBuilds:
+  esbuild: true
+  lefthook: true

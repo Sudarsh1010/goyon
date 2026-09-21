@@ -1,0 +1,29 @@
+{
+  "name": "my-better-t-app",
+  "private": true,
+  "workspaces": [
+    "docs",
+    "tooling/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "check": "oxlint && oxfmt --write"
+  },
+  "dependencies": {
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@my-better-t-app/config": "workspace:*",
+    "@types/node": "^26.4.1",
+    "lefthook": "^2.1.12",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "turbo": "^2.10.12",
+    "typescript": "^6.0.3",
+    "varlock": "1.18.0"
+  },
+  "packageManager": "pnpm@12.5.1"
+}
