@@ -29,6 +29,9 @@
             gotools
             delve
 
+            # Git hooks (lefthook.yml)
+            lefthook
+
             nodejs_24
             corepack_24
           ];
