@@ -93,9 +93,26 @@ The companion `goyonvet` analyzer (Phase 6, planned) flags unsynchronized writes
 - Bounded parallelism by default; no unbounded fan-out
 - Cancellation is prompt and complete: zero leaked goroutines, ever
 
+## Performance
+
+Phase 1 gate: `par.Map` vs. a hand-rolled `errgroup` baseline doing identical work (design doc §6: within ~10%). Median of 10 runs, Ryzen 7 5700, Go 1.27.1:
+
+| Benchmark                     |     ns/op |   B/op | allocs/op | overhead |
+| ----------------------------- | --------: | -----: | --------: | -------: |
+| `BenchmarkMap/n=100/par`      |    30,553 | 10,048 |       208 |     ~+4% |
+| `BenchmarkMap/n=100/errgroup` |    29,335 |  8,392 |       206 |          |
+| `BenchmarkMap/n=10000/par`    | 2,625,000 | 962,282 |    20,008 |   ~+1.3% |
+| `BenchmarkMap/n=10000/errgroup` | 2,591,000 | 802,220 |    20,006 |        |
+
+The wrapper costs a constant 2 allocations; time overhead amortizes with input size. Reproduce:
+
+```bash
+go test -run=XXX -bench=BenchmarkMap -benchmem -count=10 ./bench/
+```
+
 ## Status
 
-Design phase; see [goyon-design.md](goyon-design.md) for the full architecture and phased roadmap. Not yet released.
+Phase 1 complete: `Map`, `ForEach`, `WithConcurrency`, `PanicError` — green under `-race` + `goleak`, benchmark gate passed, with the ASPLOS'19 bug archetypes as regression tests (`bugs/`). Phase 2 (`Reduce`, `Filter`, `MapUnordered`, chunking) in progress; see [goyon-design.md](goyon-design.md) for the full architecture and roadmap. Not yet released.
 
 ## License
 

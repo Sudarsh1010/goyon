@@ -60,3 +60,6 @@ tmp
 temp
 
 .corepack
+
+# Local learning workspace (TDD lessons, not part of the library)
+learn/
