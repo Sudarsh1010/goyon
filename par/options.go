@@ -7,13 +7,14 @@ type cfg struct {
 	identity    any // travels untyped; recovered by the T that knows
 	hasIdentity bool
 	ordered     bool
+	failFast    bool
 }
 
 // Option configures a par call.
 type Option func(*cfg)
 
 func resolveConfig(options ...Option) cfg {
-	c := cfg{concurrency: runtime.GOMAXPROCS(0)}
+	c := cfg{concurrency: runtime.GOMAXPROCS(0), failFast: true}
 	for _, o := range options {
 		o(&c)
 	}
@@ -42,5 +43,15 @@ func WithIdentity[T any](v T) Option {
 func WithOrderedReduce() Option {
 	return func(c *cfg) {
 		c.ordered = true
+	}
+}
+
+// WithFailFast sets first-error-cancellation behavior. Default true; with
+// false, every unit runs to completion and all errors are joined
+// (errors.Is reaches each one). Sequential folds still stop at their
+// first error — a fold cannot continue past one.
+func WithFailFast(b bool) Option {
+	return func(c *cfg) {
+		c.failFast = b
 	}
 }

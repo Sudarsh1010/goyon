@@ -2,6 +2,7 @@ package par
 
 import (
 	"context"
+	"sync/atomic"
 
 	"github.com/sudarsh1010/goyon/internal/engine"
 )
@@ -99,8 +100,66 @@ func Reduce[T any](
 	return foldSeq(ctx, identity, partials, 0, fn)
 }
 
+// Filter keeps the items for which pred returns true, preserving input
+// order. Bounds, cancellation, and panic semantics match Map.
+func Filter[T any](
+	ctx context.Context,
+	items []T,
+	pred func(ctx context.Context, i int, v T) (bool, error),
+	opts ...Option,
+) ([]T, error) {
+	keep := make([]bool, len(items))
+
+	err := run(ctx, items, func(gctx context.Context, i int, v T) error {
+		ok, err := pred(gctx, i, v)
+		if err != nil {
+			return err
+		}
+		keep[i] = ok
+		return nil
+	}, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]T, 0, len(items))
+	for i, v := range items {
+		if keep[i] {
+			out = append(out, v)
+		}
+	}
+	return out, nil
+}
+
+// MapUnordered is Map without the ordering guarantee: results appear in
+// completion order. Same multiset as Map, same error and panic semantics.
+func MapUnordered[T, R any](
+	ctx context.Context,
+	items []T,
+	fn func(ctx context.Context, i int, v T) (R, error),
+	opts ...Option,
+) ([]R, error) {
+	results := make([]R, len(items))
+	var next atomic.Int64
+
+	err := run(ctx, items, func(gctx context.Context, i int, v T) error {
+		r, err := fn(gctx, i, v)
+		if err != nil {
+			return err
+		}
+		results[next.Add(1)-1] = r // completion-order slot: lock-free append
+		return nil
+	}, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
 func run[T any](ctx context.Context, units []T, fn func(context.Context, int, T) error, opts ...Option) error {
-	return engine.Run(ctx, units, resolveConfig(opts...).concurrency, fn)
+	config := resolveConfig(opts...)
+	return engine.Run(ctx, units, config.concurrency, config.failFast, fn)
 }
 
 // foldSeq threads acc through the sequential engine; capture is safe

@@ -112,7 +112,7 @@ go test -run=XXX -bench=BenchmarkMap -benchmem -count=10 ./bench/
 
 ## Status
 
-Phase 1 complete: `Map`, `ForEach`, `WithConcurrency`, `PanicError` — green under `-race` + `goleak`, benchmark gate passed, with the ASPLOS'19 bug archetypes as regression tests (`bugs/`). Phase 2 (`Reduce`, `Filter`, `MapUnordered`, chunking) in progress; see [goyon-design.md](goyon-design.md) for the full architecture and roadmap. Not yet released.
+Phase 2 slice-op layer complete: `Map`, `MapUnordered`, `ForEach`, `Filter`, `Reduce` with `WithConcurrency`, `WithIdentity`, `WithOrderedReduce`, `WithFailFast` — all green under `-race` + `goleak`, benchmark gate passed, ASPLOS'19 bug archetypes as regression tests (`bugs/`). Next: adaptive chunking and the hand-rolled worker pool in `internal/engine` (design doc §4.1–4.2). Not yet released.
 
 ## License
 
